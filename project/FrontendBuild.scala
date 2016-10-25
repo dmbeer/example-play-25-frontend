@@ -14,8 +14,8 @@ private object AppDependencies {
   import play.PlayImport._
   import play.core.PlayVersion
 
-  private val playHealthVersion = "1.1.0"    
-  private val playJsonLoggerVersion = "2.1.1"      
+  private val playHealthVersion = "1.1.0"
+  private val playJsonLoggerVersion = "2.1.1"
   private val frontendBootstrapVersion = "6.7.0"
   private val govukTemplateVersion = "4.0.0"
   private val playUiVersion = "4.17.0"
@@ -25,7 +25,7 @@ private object AppDependencies {
   private val hmrcTestVersion = "1.9.0"
   private val scalaTestVersion = "2.2.6"
   private val pegdownVersion = "1.6.0"
-  
+
   val compile = Seq(
     ws,
     "uk.gov.hmrc" %% "frontend-bootstrap" % frontendBootstrapVersion,
@@ -50,7 +50,8 @@ private object AppDependencies {
         "org.scalatest" %% "scalatest" % scalaTestVersion % scope,
         "org.pegdown" % "pegdown" % pegdownVersion % scope,
         "org.jsoup" % "jsoup" % "1.8.1" % scope,
-        "com.typesafe.play" %% "play-test" % PlayVersion.current % scope
+        "com.typesafe.play" %% "play-test" % PlayVersion.current % scope,
+        "org.scalatestplus" %% "play" % "1.2.0" % scope
       )
     }.test
   }
