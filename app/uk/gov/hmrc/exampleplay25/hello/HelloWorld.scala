@@ -17,6 +17,7 @@
 package uk.gov.hmrc.exampleplay25.hello
 
 import java.util.concurrent.atomic.AtomicInteger
+import javax.inject.Inject
 
 import uk.gov.hmrc.play.frontend.controller.FrontendController
 import play.api.mvc._
@@ -24,19 +25,23 @@ import play.api.mvc._
 import scala.concurrent.Future
 import play.api.Play.current
 import play.api.i18n.Messages.Implicits._
-import play.api.http.MimeTypes
+import play.api.http.{HeaderNames, MimeTypes}
 import play.api.i18n.Lang
 import play.api.libs.json.Json
 import HelloForm.helloForm
+import uk.gov.hmrc.exampleplay25.audit.{AuditClient, AuditItem}
 import uk.gov.hmrc.exampleplay25.views.html.helloworld._
+import uk.gov.hmrc.play.http.HeaderCarrier
 
-object HelloWorld extends HelloWorld
 
-trait HelloWorld extends FrontendController {
+
+class HelloWorld @Inject()(auditClient: AuditClient) extends FrontendController {
 
   private val sequence = new AtomicInteger(0)
   private implicit val responseWriter = Json.writes[ResponseContent]
   private val cymraeg = Lang("cy")
+
+  private val XTrackingID = "X-Tracking-ID"
 
   // This demonstrates some content negotiation patterns
   def hello(name: String, id: Option[String]): Action[AnyContent] = Action.async { implicit request =>
@@ -47,6 +52,8 @@ trait HelloWorld extends FrontendController {
       case _ =>
         ResponseContent("Hello " + name, sequence.incrementAndGet)
     }
+
+    writeAudit(Context(hc(request), request.headers), content, true)
 
     val response = if (request.accepts(MimeTypes.HTML)) {
       Ok(hello_world(content.message, helloForm))
@@ -62,6 +69,25 @@ trait HelloWorld extends FrontendController {
     val bound = helloForm.bindFromRequest()(request)
     SeeOther(routes.HelloWorld.hello(bound.get.name.getOrElse("world"), bound.get.id).url)
   }
+
+
+  private def writeAudit(context: Context, response: ResponseContent, success: Boolean = true) {
+    val trackingId = context.headers.get(XTrackingID)
+    val userAgent = context.headers.get(HeaderNames.USER_AGENT)
+
+    val tags: Map[String, String] =
+      if (trackingId.isEmpty) Map.empty
+      else Map(XTrackingID -> trackingId.get)
+
+    val auditItemList = List(
+      AuditItem.fromProduct("response.", response)
+    )
+
+    auditClient.succeeded(tags, context.headerCarrier, userAgent, auditItemList: _*)
+  }
 }
 
 case class ResponseContent(message: String, count: Int)
+
+
+case class Context(headerCarrier: HeaderCarrier, headers: Headers)

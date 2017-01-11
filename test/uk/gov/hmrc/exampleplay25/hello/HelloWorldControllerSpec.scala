@@ -20,21 +20,25 @@ import play.api.http.Status
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.play.test.{UnitSpec, WithFakeApplication}
+import org.mockito.Mockito._
+import org.scalatest.mock.MockitoSugar
+import uk.gov.hmrc.exampleplay25.audit.AuditClient
 
 
-class HelloWorldControllerSpec extends UnitSpec with WithFakeApplication{
+class HelloWorldControllerSpec extends UnitSpec with WithFakeApplication with MockitoSugar {
 
   val fakeRequest = FakeRequest("GET", "/")
 
-
   "GET /" should {
     "return 200" in {
-      val result = HelloWorld.hello("Joe", None)(fakeRequest)
+      val auditClient = mock[AuditClient]
+      val result = new HelloWorld(auditClient).hello("Joe", None)(fakeRequest)
       status(result) shouldBe Status.OK
     }
 
     "return HTML" in {
-      val result = HelloWorld.hello("Joe", None)(fakeRequest)
+      val auditClient = mock[AuditClient]
+      val result = new HelloWorld(auditClient).hello("Joe", None)(fakeRequest)
       contentType(result) shouldBe Some("text/html")
       charset(result) shouldBe Some("utf-8")
     }
