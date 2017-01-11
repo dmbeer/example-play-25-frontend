@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 HM Revenue & Customs
+ * Copyright 2017 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,19 +14,21 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.exampleplay25.controllers
+package uk.gov.hmrc.exampleplay25.hello
 
-import org.scalatestplus.play.{HtmlUnitFactory, OneBrowserPerSuite, OneServerPerSuite, PlaySpec}
+import play.api.data.Form
+import play.api.data.Forms._
 
-class HelloWorldFunctionalSpec extends PlaySpec with OneServerPerSuite with OneBrowserPerSuite with HtmlUnitFactory {
 
-  "hello world" should {
-
-    "display message" in {
-      go to (s"http://localhost:$port/example-play-25-frontend/hello-world")
-      find(id("message")).get.text must be ("Hello from example-play-25-frontend !")
-    }
-
+object HelloForm {
+  val helloForm = Form[HelloData] {
+    mapping(
+      "id" -> optional(text),
+      "name" -> optional(text),
+      "story" -> optional(text)
+    )(HelloData.apply)(HelloData.unapply)
   }
-
 }
+
+
+case class HelloData(id: Option[String], name: Option[String] = None, story: Option[String] = None)

@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 HM Revenue & Customs
+ * Copyright 2017 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,16 +14,12 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.exampleplay25.controllers
+package uk.gov.hmrc.exampleplay25.hello
 
 import play.api.http.Status
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import play.api.http._
-import play.api.test.FakeRequest
-import play.api.test.Helpers._
-import uk.gov.hmrc.play.test.UnitSpec
-import uk.gov.hmrc.play.test.{WithFakeApplication, UnitSpec}
+import uk.gov.hmrc.play.test.{UnitSpec, WithFakeApplication}
 
 
 class HelloWorldControllerSpec extends UnitSpec with WithFakeApplication{
@@ -33,12 +29,12 @@ class HelloWorldControllerSpec extends UnitSpec with WithFakeApplication{
 
   "GET /" should {
     "return 200" in {
-      val result = HelloWorld.helloWorld(fakeRequest)
+      val result = HelloWorld.hello("Joe", None)(fakeRequest)
       status(result) shouldBe Status.OK
     }
 
     "return HTML" in {
-      val result = HelloWorld.helloWorld(fakeRequest)
+      val result = HelloWorld.hello("Joe", None)(fakeRequest)
       contentType(result) shouldBe Some("text/html")
       charset(result) shouldBe Some("utf-8")
     }

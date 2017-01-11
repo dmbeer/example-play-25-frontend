@@ -1,3 +1,7 @@
 # microservice specific routes
 
-GET        /hello-world             uk.gov.hmrc.exampleplay25.controllers.HelloWorld.helloWorld
+GET     /hello/:name         uk.gov.hmrc.exampleplay25.hello.HelloWorld.hello(name: String, id: Option[String])
+POST    /story               uk.gov.hmrc.exampleplay25.hello.HelloWorld.postStory
+
+# Static assets (in addition to those in assets-frontend)
+GET     /assets/*file        controllers.Assets.at(path="/public", file)
