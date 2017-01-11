@@ -45,15 +45,9 @@ class HelloWorld @Inject()(auditClient: AuditClient) extends FrontendController 
 
   // This demonstrates some content negotiation patterns
   def hello(name: String, id: Option[String]): Action[AnyContent] = Action.async { implicit request =>
-    val preferredLanguage = request.acceptLanguages.headOption
-    val content = preferredLanguage match {
-      case Some(lang) if lang.satisfies(cymraeg) =>
-        ResponseContent("Croesawu " + name, sequence.incrementAndGet)
-      case _ =>
-        ResponseContent("Hello " + name, sequence.incrementAndGet)
-    }
+    val content = selectResponseContent(name, request.acceptLanguages.headOption)
 
-    writeAudit(Context(hc(request), request.headers), content, true)
+    writeAudit(Context(hc(request), request.headers), Some(content))
 
     val response = if (request.accepts(MimeTypes.HTML)) {
       Ok(hello_world(content.message, helloForm))
@@ -64,14 +58,23 @@ class HelloWorld @Inject()(auditClient: AuditClient) extends FrontendController 
     Future.successful(response)
   }
 
+  private def selectResponseContent(name: String, preferredLanguage: Option[Lang]) = {
+    preferredLanguage match {
+      case Some(lang) if lang.satisfies(cymraeg) =>
+        ResponseContent("Croesawu " + name, "cy", sequence.incrementAndGet)
+      case _ =>
+        ResponseContent("Hello " + name, "en", sequence.incrementAndGet)
+    }
+  }
+
   def postStory: Action[AnyContent] = Action { implicit request =>
-    // server-side processing goes here
+    writeAudit(Context(hc(request), request.headers), None)
     val bound = helloForm.bindFromRequest()(request)
     SeeOther(routes.HelloWorld.hello(bound.get.name.getOrElse("world"), bound.get.id).url)
   }
 
 
-  private def writeAudit(context: Context, response: ResponseContent, success: Boolean = true) {
+  private def writeAudit(context: Context, response: Option[ResponseContent]) {
     val trackingId = context.headers.get(XTrackingID)
     val userAgent = context.headers.get(HeaderNames.USER_AGENT)
 
@@ -79,15 +82,13 @@ class HelloWorld @Inject()(auditClient: AuditClient) extends FrontendController 
       if (trackingId.isEmpty) Map.empty
       else Map(XTrackingID -> trackingId.get)
 
-    val auditItemList = List(
-      AuditItem.fromProduct("response.", response)
-    )
+    val auditItemList = response.map(r => AuditItem.fromProduct("response.", r)).toList
 
     auditClient.succeeded(tags, context.headerCarrier, userAgent, auditItemList: _*)
   }
 }
 
-case class ResponseContent(message: String, count: Int)
+case class ResponseContent(message: String, lang: String, count: Int)
 
 
 case class Context(headerCarrier: HeaderCarrier, headers: Headers)
