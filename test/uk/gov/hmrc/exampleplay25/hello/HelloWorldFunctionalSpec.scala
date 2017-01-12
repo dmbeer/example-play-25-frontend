@@ -23,7 +23,7 @@ import play.api.test.Helpers.{contentAsString, _}
 
 class HelloWorldFunctionalSpec extends PlaySpec with OneServerPerSuite with OneBrowserPerSuite with HtmlUnitFactory {
 
-  lazy val base = s"http://localhost:$port/example-play-25-frontend"
+  lazy val base = s"http://localhost:$port/example-frontend"
 
   "hello world" should {
 
